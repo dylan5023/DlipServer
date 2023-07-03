@@ -2,6 +2,47 @@ const express = require("express");
 const router = express.Router();
 const { Article, Board } = require("./../mongoose/model");
 
+// get evey articles
+router.get("/main", async (req, res) => {
+  const board = await Board.find({});
+  if (!Array.isArray(board)) {
+    res.send({
+      error: true,
+      msg: "Can't find board",
+    });
+  }
+
+  let mainContent = [];
+  Promise.all(
+    board.map(async (b) => {
+      const recentArticles = await Article.find({ board: b._id });
+      if (!Array.isArray(recentArticles)) {
+        return;
+      }
+      mainContent.push({
+        ...b._doc,
+        content: recentArticles,
+      });
+      return;
+    })
+  )
+    .then(() => {
+      res.send({
+        content: mainContent,
+        error: false,
+        msg: "success",
+      });
+    })
+    .catch((err) => {
+      console.error(err);
+      res.send({
+        content: null,
+        error: true,
+        msg: "server error",
+      });
+    });
+});
+
 // get the posts per board
 router.get("/board/:slug", async (req, res) => {
   const { slug } = req.params;
