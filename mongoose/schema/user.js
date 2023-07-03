@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const crpyto = require("crypto");
+const crypto = require("crypto");
 const Schema = mongoose.Schema;
 
 const User = new Schema({
@@ -20,12 +20,12 @@ User.virtual("password").set(function (password) {
 
 //  create a new salt
 User.method("makeSalt", function () {
-  return Math.round(new Date().valueOf() * Math.random()) + "Hello Dylank";
+  return Math.round(new Date().valueOf() * Math.random()) + "HelloDylank";
 });
 
 // create the hased password
 User.method("encryptPassword", function (plainPassword) {
-  return crpyto
+  return crypto
     .createHmac("sha256", this.salt)
     .update(plainPassword)
     .digest("hex");
@@ -34,7 +34,6 @@ User.method("encryptPassword", function (plainPassword) {
 // authenticate of user
 User.method("authenticate", function (plainPassword) {
   const inputPassword = this.encryptPassword(plainPassword);
-
   return inputPassword === this.hashedPassword;
 });
 

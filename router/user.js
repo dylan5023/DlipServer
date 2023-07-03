@@ -3,16 +3,16 @@ const router = express.Router();
 const { User } = require("./../mongoose/model");
 
 // login
-router.post("/user", async (req, res) => {
-  const { email, password } = req.params;
-  const loginUser = await User.find({ email: email });
+router.post("/user/login", async (req, res) => {
+  const { email, password } = req.body;
+  const loginUser = await User.findOne({ email: email });
   if (!loginUser._id) {
     return res.send({
       error: true,
       msg: "User not found",
     });
   }
-  const correctPassword = await User.authenticate(password);
+  const correctPassword = await loginUser.authenticate(password);
   if (!correctPassword) {
     return res.send({
       error: true,
