@@ -3,11 +3,15 @@ const cors = require("cors");
 const { article, board, comment, company, reply, user } = require("./router");
 const app = express();
 const PORT = 8088;
-
+const SECRET = "@#DKFIWNSD123#%!@#$SIFL";
 app.use(cors());
 app.use(express.json()); //req.body
 app.use(express.urlencoded({ extended: true }));
 
+// JWT settings
+app.set("jwt-secret", SECRET);
+
+// add routes
 app.use(article);
 app.use(board);
 app.use(comment);
