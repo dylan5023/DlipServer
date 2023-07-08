@@ -12,4 +12,11 @@ router.post("/company/create", async (req, res) => {
   res.send(newCompany._id ? true : false);
 });
 
+// get list of popular companies
+router.get("/company/list/famous", async (req, res) => {
+  const company = await Company.find().limit(10).sort({ realtimeScore: -1 });
+
+  res.send(company);
+});
+
 module.exports = router;

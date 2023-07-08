@@ -43,6 +43,12 @@ router.get("/main", async (req, res) => {
     });
 });
 
+// get the board list
+router.get("/board/list", async (req, res) => {
+  const board = await Board.find();
+  res.send(board);
+});
+
 // get the posts per board
 router.get("/board/:slug", async (req, res) => {
   const { slug } = req.params;
