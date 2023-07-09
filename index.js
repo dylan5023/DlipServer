@@ -4,8 +4,9 @@ const { article, board, comment, company, reply, user } = require("./router");
 const app = express();
 const PORT = 8088;
 const SECRET = "@#DKFIWNSD123#%!@#$SIFL";
+
 app.use(cors());
-app.use(express.json()); //req.body
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // JWT settings

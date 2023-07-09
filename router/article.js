@@ -11,29 +11,46 @@ router.get("/article/:id", async (req, res) => {
 });
 
 // add article
+// add article
 router.post("/article/create", async (req, res) => {
   const { title, content, board } = req.body;
   const { authorization } = req.headers;
 
   if (!authorization) {
-    return res.send({
+    return res.status(401).json({
       error: true,
-      msg: "Token is not existing",
+      msg: "Token is required",
     });
   }
+
   const token = authorization.split(" ")[1];
-  app.set("jwt-secret", SECRET);
+  const secret = req.app.get("jwt-secret");
+
   jwt.verify(token, secret, async (err, data) => {
     if (err) {
-      return res.send(err);
+      return res
+        .status(401)
+        .json({ error: true, msg: "Token is not available" });
     }
-    const payload = { author: data.id, title, content, board };
-    const newArticle = await Article({ payload }).save();
-    res.send(newArticle);
+
+    try {
+      const payload = {
+        author: data.id,
+        title,
+        content,
+        board,
+      };
+
+      const newArticle = await Article.create(payload);
+      res.json(newArticle);
+    } catch (error) {
+      res.status(500).json({ error: true, msg: "Fail to create article" });
+    }
   });
 });
+
 // edit the article
-router.patch("/article /update", async (req, res) => {
+router.patch("/article/update", async (req, res) => {
   const { id, author, content } = req.body;
   const updatedArticle = await Article.findOneAndUpdate(
     { _id: id, author },
