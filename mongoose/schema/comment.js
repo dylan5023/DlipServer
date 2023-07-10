@@ -10,6 +10,7 @@ const Comment = new Schema({
 
   //   dynamically generated
   thumbupCount: { type: Number, default: 0 },
+  replyCount: { type: Number, default: 0 },
   deleteTime: { type: Number, default: 0 },
 
   //   option: user can add data

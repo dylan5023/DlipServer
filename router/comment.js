@@ -1,12 +1,41 @@
 const express = require("express");
 const router = express.Router();
-const { Comment } = require("../mongoose/model");
-
+const { Article, Comment } = require("../mongoose/model");
+const jwt = require("jsonwebtoken");
 // add the comment
 router.post("/comment/create", async (req, res) => {
-  const { author, article, content } = req.body;
-  const newComment = await Comment.create({ author, article, content });
-  res.send(newComment._id ? true : false);
+  const { article, content } = req.body;
+  const { authorization } = req.headers;
+
+  if (!authorization) {
+    return res.send({
+      error: true,
+      msg: "Token is not authorized",
+    });
+  }
+
+  const token = authorization.split(" ")[1];
+  const secret = req.app.get("jwt-secret");
+
+  jwt.verify(token, secret, async (err, data) => {
+    if (err) {
+      res.send(err);
+    }
+
+    const newComment = await Comment({
+      author: data.id,
+      article,
+      content,
+    }).save();
+
+    await Article.findOneAndUpdate(
+      { _id: article },
+      {
+        $inc: { commentCount: 1 },
+      }
+    );
+    res.send(newComment._id ? true : false);
+  });
 });
 
 // edit the comment

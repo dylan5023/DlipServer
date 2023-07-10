@@ -1,9 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const jwt = require("jsonwebtoken");
-const { Article, Comment, Reply } = require("../mongoose/model");
+const { Article } = require("../mongoose/model");
 
-//  get each article
+// A route that returns post search results
 router.get("/article/:key", async (req, res) => {
   const { key } = req.params;
 
@@ -67,77 +66,36 @@ router.get("/article/:key", async (req, res) => {
     .catch(() => {});
 });
 
-// add articles
-router.post("/article/create", async (req, res) => {
-  const { title, content, board } = req.body;
-  const { authorization } = req.headers;
+router.get("/search/:q", async (req, res) => {
+  const { q } = req.params;
+  const { lastIndex } = req.query;
 
-  if (!authorization) {
-    return res.send({
-      error: true,
-      msg: "Token is not authorized",
-    });
+  const findOption = {
+    title: { $regex: q },
+  };
+
+  if (lastIndex !== "0") {
+    findOption._id = { $lt: lastIndex };
   }
 
-  const token = authorization.split(" ")[1];
-  const secret = req.app.get("jwt-secret");
+  // Increment the viewCount of the articles in the search result by 1
+  await Article.updateMany(findOption, { $inc: { viewCount: 1 } });
 
-  jwt.verify(token, secret, async (err, data) => {
-    if (err) {
-      res.send(err);
-    }
-    const payload = {
-      author: data.id,
-      title,
-      content,
-      board,
-    };
-    const newArticle = await Article(payload).save();
-    res.send(newArticle);
+  const article = await Article.find(findOption)
+    .sort({ _id: -1 })
+    .limit(6)
+    .populate({
+      path: "author",
+      populate: {
+        path: "company",
+      },
+    });
+
+  res.send({
+    article: article,
+    error: false,
+    msg: "Success",
   });
-});
-
-// edit article
-router.patch("/article/update", async (req, res) => {
-  const { id, author, content } = req.body;
-  const updatedArticle = await Article.findOneAndUpdate(
-    {
-      _id: id,
-      author,
-    },
-    {
-      content,
-    },
-    {
-      new: true,
-    }
-  );
-  res.send(updatedArticle);
-});
-
-//(HARD DELETE)
-router.delete("/article/delete/hard", async (req, res) => {
-  const { id, author } = req.body;
-  const deletedArticle = await Article.deleteOne({
-    _id: id,
-    author,
-  });
-  res.send(deletedArticle);
-});
-
-// (SOFT DELETE)
-router.delete("/article/delete/soft", async (req, res) => {
-  const { id, author } = req.body;
-  const deletedArticle = await Article.findOneAndUpdate(
-    {
-      _id: id,
-      author,
-    },
-    {
-      deleteTime: new Date().getTime() + 30 * 24 * 60 * 60 * 1000, // 30일 후의 시간이 저장
-    }
-  );
-  res.send(deletedArticle);
 });
 
 module.exports = router;

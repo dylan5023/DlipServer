@@ -15,7 +15,6 @@ router.post("/company/create", async (req, res) => {
 // get list of popular companies
 router.get("/company/list/famous", async (req, res) => {
   const company = await Company.find().limit(10).sort({ realtimeScore: -1 });
-
   res.send(company);
 });
 

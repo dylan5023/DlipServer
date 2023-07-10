@@ -1,6 +1,14 @@
 const express = require("express");
 const cors = require("cors");
-const { article, board, comment, company, reply, user } = require("./router");
+const {
+  article,
+  board,
+  comment,
+  company,
+  reply,
+  search,
+  user,
+} = require("./router");
 const app = express();
 const PORT = 8088;
 const SECRET = "@#DKFIWNSD123#%!@#$SIFL";
@@ -18,6 +26,7 @@ app.use(board);
 app.use(comment);
 app.use(company);
 app.use(reply);
+app.use(search);
 app.use(user);
 
 app.get("/", (req, res) => {
